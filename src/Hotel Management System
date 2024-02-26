@@ -1,0 +1,173 @@
+/*
+Hotel Management System
+******* Requirements ***********
+  1. The System should support the booking of different room types like standard, deluxe etc
+  2. Guest should be able to search the room inventory and book any available room;
+  3. The system should be able to retrieve information, such as who booked a particular room, or  what rooms were
+     booked by a specific customer;
+  4. The system should allows customers to cancel their booking - and provide them with a full refund if the
+     cancellation occurs before 24 hours of the check-in date;
+  5. The system should be able to send notifications whenever the booking is nearing the check-in or check-out date.
+  6. The system should maintain a room housekeeping log to keep track of all housekeeping tasks
+  7. Any Customer should be able to add room services and food items;
+  8. The customers should be able to pay their bills through credit card, check oor cash.
+  9. Admin should be able to add / delete and edit a room;
+  10. Receptionist should be able to check in  or check out a guest.
+
+  *************** Actors *******
+  Guest
+  Receptionist
+  Admin
+  Server
+  House Keeping
+  ******** Use Cases ************
+  Add /Remove/ Edit room
+  Search room
+  Book room
+  Cancel room
+  Check-in
+  Check-out
+  Add room charge
+  Update housekeeping log
+
+
+
+
+*/
+class Hotel {
+     private String name;
+     private Integer id;
+     private Location location;
+     private List<Room> roomsList;
+}
+class Location {
+   private Integer latitude;
+   private Integer  longitude;
+   private String area;
+   private String city;
+   private String country;
+}
+
+class Room {
+  private String roomNumber;
+  private RoomStyle roomStyle;
+  private RoomStatus roomStatus;
+  private Double bookingPrice;
+  List<RoomKey>roomKeys;
+  List<HouseKeepingLog>houseKeepingLogs;
+}
+public enum RoomStyle {
+  STANDARD, DELUX, FAMILY_SUITE;
+}
+public enum RoomStatus {
+  AVAILABLE, RESERVED, NOT_AVAILABLE, OCCUPIED, SERVICE_IN_PROGRESS;
+}
+class RoomKey{
+  private String keyId;
+  private String barCode;
+  private Date issueAt;
+  private Boolean isActive;
+  private Boolean isMaster;
+
+  public void assignRoom(Room room);
+}
+
+class HouseKeepingLog {
+    String description;
+    Date startDate;
+    Integer duration;
+    HouseKeeper houseKeeper;
+
+    public void addRoom(Room  room);
+}
+ //Create all actors
+ abstract class Person {
+    String name;
+    Account accountDetails;
+    String phone;
+ }
+ public class Account {
+    String username;
+    String password;
+
+    AccountStatus accountStatus;
+ }
+ public enum AccountStatus {
+   ACTIVE, CLOSED, BLOCKED;
+ }
+ class HouseKeeper extends Person {
+      public List<Room> getRoomsServiceId(Date date);
+ }
+ class Guest extends Person {
+   Search searchObj;
+   Booking bookingObj;
+
+   public List<RoomBooking>getAllRoomBookings();
+ }
+
+ class Receptionist extends Person {
+  Search searchObj;
+  Booking bookingObj;
+
+  public void checkInGuest(Guest guest, RoomBooking bookingInfo);
+  public void checkOutGuest(Guest guest, RoomBooking bookingInfo);
+ }
+
+ class Admin extends Person {
+       public void addRoom(Room roomDetails);
+       public Room deleteRoom(String roomId);
+       public void editRoom(Room roomDetails);
+ }
+
+ class Search {
+   public List<Room> searchRoom(RoomStyle roomStyle, Date startDate, Date endDate, Integer duration);
+ }
+
+ class Booking {
+    public RoomBooking createBooking(Guest guestInfo);
+    public RoomBooking cancelBooking(Integer bookingId);
+ }
+
+ class RoomBooking {
+    String bookingId;
+    Date startDate;
+    Integer durationInDays;
+    BookingStatus bookingStatus;
+    List<Guest> guestList;
+    List<Room>roomInfo;
+    BaseRoomCharge totalRoomCharges;
+ }
+
+ /*
+   We Decorator Pattern to decorate the prices here
+ */
+ interface BaseRoomCharge{
+    Double getCost();
+    void setCost(Double cost);
+ }
+ class RoomCharge implements BaseRoomCharge{
+   Double cost;
+   Double getCost(){
+     return cost;
+   }
+   void setCost(Double cost){
+     this.cost =  cost;
+   }
+ }
+
+ class RoomServiceCharge implements BaseRoomCharge {
+     Double cost;
+     BaseRoomCharge baseRoomCharge;
+     Double getCost(){
+        baseRoomCharge.setCost(baseRoomCharge.getCost() +  cost);
+        return baseRoomCharge.getCost();
+     }
+ }
+ class InRoomPurchaseCharges implements BaseRoomCharge{
+    Double cost;
+    BaseRoomCharge baseRoomCharge;
+    Double getCost(){
+       baseRoomCharge.setCost(baseRoomCharge.getCost() +  cost);
+       return baseRoomCharge.getCost();
+    }
+ }
